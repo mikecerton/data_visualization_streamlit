@@ -21,7 +21,8 @@ def get_school_data(string_input, df):
     tea_chart = create_pie_chart(school_df, "Teacher_Quality")
 
     return [student_number, average_score, score_counts_df, tea_chart]
-    
+
+# p 5
 def set_edited_csv(edited_df, df):
     df.update(edited_df)
     df.to_csv("./dataset.csv", index=False)
