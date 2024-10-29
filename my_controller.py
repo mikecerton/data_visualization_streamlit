@@ -9,7 +9,7 @@ def open_csv_file(filepath):
 # p 1
 def search_by_Student_ID(stud_ID, df):
     stud_ID = int(stud_ID)
-    student_row = df[df['student_ID'] == stud_ID]
+    student_row = df[df['Student_ID'] == stud_ID]
     return student_row
 
 # p 3

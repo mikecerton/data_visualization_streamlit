@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 from my_controller import search_by_Student_ID, get_Income_data, open_csv_file, set_edited_csv, get_school_data, create_pie_chart, create_bar_chart, get_whole_data
 
@@ -55,3 +56,69 @@ if user_input_p5:
 st.subheader("6.Show the proportion of Family_Income of the data.")
 data_p6 = get_Income_data(df)
 st.bar_chart(data_p6.set_index('Labels'))
+
+
+data = open_csv_file(".\dataset.csv")
+
+
+# function 7
+st.subheader("ลำดับนักเรียนที่ได้คะแนนสูที่สุด")
+num_top = st.selectbox("เลือกจำนวนอันดับที่ต้องการ", [10, 20, 50, 100])
+sorted_exam_score = data.sort_values(by='Exam_Score', ascending=False).head(num_top)
+st.write(f"คะแนนสูงสุด {num_top} อันดับแรก:")    
+st.write(sorted_exam_score[['Student_ID', 'Hours_Studied', 'Attendance', 'Previous_Scores', 'Exam_Score']])
+
+# function 8
+st.subheader("สถิติการเข้าร่วมชั้นเรียน")
+
+bins = [60, 65, 70, 75, 80, 85, 90, 95, 100]
+labels = ["60-65", "66-70", "71-75", "76-80", "81-85", "86-90", "91-95", "96-100"]
+data['Attendance_Bin'] = pd.cut(data['Attendance'], bins=bins, labels=labels, right=True)
+attendance_counts = data['Attendance_Bin'].value_counts().sort_index()
+
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.barplot(x=attendance_counts.index, y=attendance_counts.values, palette="Blues", ax=ax)
+ax.set_xlabel("Attendance", fontsize=10, weight='bold')
+ax.set_ylabel("Number of Students", fontsize=10, weight='bold')
+ax.tick_params(axis='x', rotation=45)  
+
+for i, value in enumerate(attendance_counts.values):
+    ax.text(i, value + 1, str(value), ha='center', va='bottom', color='black', fontsize=9, weight='bold')
+
+st.pyplot(fig)
+
+# function 9
+st.subheader("ตรวจสอบคะแนนสอบ")
+student_id = st.text_input("ระบุ Student ID ที่ต้องการตรวจสอบ:")
+
+if student_id:
+    if student_id in data['Student_ID'].astype(str).values:
+        data['Student_ID'] = data['Student_ID'].astype(str)
+        student_data = data[data['Student_ID'] == student_id]
+
+        data_sorted = data.sort_values(by='Exam_Score', ascending=False).reset_index(drop=True)
+        rank = data_sorted[data_sorted['Student_ID'] == student_id].index[0] + 1
+
+        st.write(f"Student ID : {student_id}")
+        st.write(f"Previous Scores : {student_data['Previous_Scores'].values[0]}")
+        avg_exam_score = data['Exam_Score'].mean()
+        st.write(f"Mean Exam Score: {avg_exam_score:.2f}")
+        st.write(f"Exam Score : {student_data['Exam_Score'].values[0]}")
+        st.write(f"ลำดับที่ได้ : {rank}")
+    else:
+        st.error("cannot found this Student ID")
+
+# function 10
+st.subheader("กราฟแสดงจำนวนนักเรียนที่สอบได้คะแนนสูงขึ้น")
+
+more_than_previous = (data['Exam_Score'] > data['Previous_Scores']).sum()
+less_or_equal_to_previous = (data['Exam_Score'] <= data['Previous_Scores']).sum()
+
+labels = ['Exam Score > Previous Score', 'Exam Score < Previous Score']
+sizes = [more_than_previous, less_or_equal_to_previous]
+colors = ['#b4e0e3', '#fac357']  
+fig, ax = plt.subplots()
+ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 8})
+ax.axis('equal') 
+
+st.pyplot(fig)
