@@ -3,22 +3,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from my_controller import search_by_Student_ID, get_Income_data, open_csv_file, set_edited_csv, get_school_data, create_pie_chart, create_bar_chart, get_whole_data
+from my_controller import search_by_Student_ID, get_Income_data, open_csv_file, set_edited_csv, get_school_data, create_bar_chart, get_whole_data
 
 df = open_csv_file(".\dataset.csv")
 
 st.title("Student Data Visualization")
 
-# p 1
+# function 1
 st.subheader("1.Display student data by Student_ID")
 user_input_p1 = st.text_input("Enter Student_ID to search:", "0001", max_chars=4)
 st.write(search_by_Student_ID(user_input_p1, df))
 
-# p 2
+# function 2
 st.subheader("2.All student data in csv")
 st.write(df)
 
-# p 3
+# function 3
 st.subheader("3.Summary of All data")
 [all_stu_number, gender_chart] = get_whole_data(df)
 st.write(f"***Number Of Student = {all_stu_number}***")
@@ -27,7 +27,7 @@ st.pyplot(gender_chart)
 a = create_bar_chart(df, "Parental_Education_Level")
 st.pyplot(a)
 
-# p 4
+# function 4
 st.subheader("4.Data summary for Private or public school")
 user_input_p4 = st.multiselect("What are your favorite colors", ["Public", "Private"], max_selections = 1, default = "Public")
 string_input = user_input_p4[0] if user_input_p4 else "Public"
@@ -43,7 +43,7 @@ st.write("***Pie Chart Of Teacher Quality.***")
 st.pyplot(tea_chart)
 
 
-# p 5
+# function 5
 st.subheader("5.Edit csv file")
 user_input_p5 = st.text_input("Enter Student_ID to search:")
 if user_input_p5:
@@ -52,24 +52,22 @@ if user_input_p5:
             set_edited_csv(edited_df, df)
             st.success(f"Changes saved to dataset.csv for Student_ID {user_input_p5}")
 
-# p 6
+# function 6
 st.subheader("6.Show the proportion of Family_Income of the data.")
 data_p6 = get_Income_data(df)
 st.bar_chart(data_p6.set_index('Labels'))
 
-
 data = open_csv_file(".\dataset.csv")
 
-
 # function 7
-st.subheader("ลำดับนักเรียนที่ได้คะแนนสูที่สุด")
-num_top = st.selectbox("เลือกจำนวนอันดับที่ต้องการ", [10, 20, 50, 100])
+st.subheader("7. Displaying the Ranking of Students' Scores")
+num_top = st.selectbox("Select the number of top ranks", [10, 20, 50, 100])
 sorted_exam_score = data.sort_values(by='Exam_Score', ascending=False).head(num_top)
-st.write(f"คะแนนสูงสุด {num_top} อันดับแรก:")    
+st.write(f"Top {num_top} scores:")    
 st.write(sorted_exam_score[['Student_ID', 'Hours_Studied', 'Attendance', 'Previous_Scores', 'Exam_Score']])
 
 # function 8
-st.subheader("สถิติการเข้าร่วมชั้นเรียน")
+st.subheader("Class Attendance Statistics")
 
 bins = [60, 65, 70, 75, 80, 85, 90, 95, 100]
 labels = ["60-65", "66-70", "71-75", "76-80", "81-85", "86-90", "91-95", "96-100"]
@@ -88,8 +86,8 @@ for i, value in enumerate(attendance_counts.values):
 st.pyplot(fig)
 
 # function 9
-st.subheader("ตรวจสอบคะแนนสอบ")
-student_id = st.text_input("ระบุ Student ID ที่ต้องการตรวจสอบ:")
+st.subheader("Check Exam Score")
+student_id = st.text_input("Enter the Student ID to check:")
 
 if student_id:
     if student_id in data['Student_ID'].astype(str).values:
@@ -104,12 +102,12 @@ if student_id:
         avg_exam_score = data['Exam_Score'].mean()
         st.write(f"Mean Exam Score: {avg_exam_score:.2f}")
         st.write(f"Exam Score : {student_data['Exam_Score'].values[0]}")
-        st.write(f"ลำดับที่ได้ : {rank}")
+        st.write(f"Rank : {rank}")
     else:
         st.error("cannot found this Student ID")
 
 # function 10
-st.subheader("กราฟแสดงจำนวนนักเรียนที่สอบได้คะแนนสูงขึ้น")
+st.subheader("10. Graph Showing the Number of Students with Improved Exam Scores")
 
 more_than_previous = (data['Exam_Score'] > data['Previous_Scores']).sum()
 less_or_equal_to_previous = (data['Exam_Score'] <= data['Previous_Scores']).sum()
