@@ -3,11 +3,63 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from my_controller import search_by_Student_ID, get_Income_data, open_csv_file, set_edited_csv, get_school_data, create_bar_chart, get_whole_data
+def create_pie_chart(data, column, width=8, height=6):
+    plt.figure(figsize=(width, height))
+    counts = data[column].value_counts()
+    plt.pie(counts, labels=counts.index, autopct='%1.1f%%', startangle=90)
+    plt.title(f'Distribution of {column}')
+    plt.legend()
+    plt.axis('equal') 
+    return plt
+def create_bar_chart(data, column, width=8, height=6):
+    plt.figure(figsize=(width, height))
+    counts = data[column].value_counts()
+    colors = sns.color_palette("hsv", len(counts))
+    plt.bar(counts.index, counts.values, color=colors)
+    plt.xlabel(column)
+    plt.ylabel('Count')
+    plt.title(f'Distribution of {column}')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    return plt
 
-df = open_csv_file(".\dataset.csv")
+def open_csv_file(filepath):
+    return pd.read_csv(filepath)
+
+def search_by_Student_ID(stud_ID, df):
+    stud_ID = int(stud_ID)
+    student_row = df[df['Student_ID'] == stud_ID]
+    return student_row
+
+def get_whole_data(df):
+    all_stu_number = df.shape[0]
+    gender_chart = create_pie_chart(df, "Gender")
+    return [all_stu_number, gender_chart]
+
+def get_school_data(string_input, df):
+    school_df = df[df['School_Type'] == string_input]
+    student_number = school_df.shape[0]                                         
+    average_score = school_df['Exam_Score'].mean()                              
+    score_counts_df = school_df['Exam_Score'].value_counts().sort_index()       
+    tea_chart = create_pie_chart(school_df, "Teacher_Quality")
+    return [student_number, average_score, score_counts_df, tea_chart]
+
+def set_edited_csv(edited_df, df):
+    df.update(edited_df)
+    df.to_csv("./dataset.csv", index=False)
+
+def get_Income_data(df):
+    low_count = df[df['Family_Income'] == 'Low'].shape[0]
+    medium_count = df[df['Family_Income'] == 'Medium'].shape[0]
+    high_count = df[df['Family_Income'] == 'High'].shape[0]
+    label = ["Low", "Medium", "High"]
+    all_count = [low_count, medium_count, high_count]
+    data = pd.DataFrame({'Labels': label,'Sizes': all_count})
+    return data
 
 st.title("Student Data Visualization")
+
+df = open_csv_file(".\dataset.csv")
 
 # function 1
 st.subheader("1.Display student data by Student_ID")
@@ -67,7 +119,7 @@ st.write(f"Top {num_top} scores:")
 st.write(sorted_exam_score[['Student_ID', 'Hours_Studied', 'Attendance', 'Previous_Scores', 'Exam_Score']])
 
 # function 8
-st.subheader("Class Attendance Statistics")
+st.subheader("8. Class Attendance Statistics")
 
 bins = [60, 65, 70, 75, 80, 85, 90, 95, 100]
 labels = ["60-65", "66-70", "71-75", "76-80", "81-85", "86-90", "91-95", "96-100"]
@@ -86,7 +138,7 @@ for i, value in enumerate(attendance_counts.values):
 st.pyplot(fig)
 
 # function 9
-st.subheader("Check Exam Score")
+st.subheader("9. Check Exam Score")
 student_id = st.text_input("Enter the Student ID to check:")
 
 if student_id:
